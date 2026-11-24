@@ -1,25 +1,32 @@
 import express from "express";
 import cors from 'cors';
+import 'dotenv/config';
 
-import bookRoute from './routes/bookRoute.js';
-import studentRoute from './routes/studentRoute.js';
+import userRoute          from './routes/userRoute.js';
+import inventoryRoute     from './routes/inventoryRoute.js';
+import stockMovementRoute from './routes/stockMovementRoute.js';
+import saleRoute          from './routes/saleRoute.js';
+import promotionRoute     from './routes/promotionRoute.js';
+import analyticsRoute     from './routes/analyticsRoute.js';
 
-let corsOptions = {
+const corsOptions = {
     origin: 'http://localhost:5173',
-}
+};
 
-//create express app
 const app = express();
 
-//to parse incoming data
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 app.use(cors(corsOptions));
 
-app.use('/book', bookRoute);
-app.use('/student', studentRoute);
+app.use('/user',           userRoute);
+app.use('/inventory',      inventoryRoute);
+app.use('/stock-movement', stockMovementRoute);
+app.use('/sale',           saleRoute);
+app.use('/promotion',      promotionRoute);
+app.use('/analytics',      analyticsRoute);
 
 try {
-    const port = 3000; // Define port variable here for safety
+    const port = 3001;
     app.listen(port, () => {
         console.log(`listening to port ${port}...`);
     });
