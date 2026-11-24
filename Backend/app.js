@@ -10,7 +10,7 @@ import promotionRoute     from './routes/promotionRoute.js';
 import analyticsRoute     from './routes/analyticsRoute.js';
 
 const corsOptions = {
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173'],
 };
 
 const app = express();

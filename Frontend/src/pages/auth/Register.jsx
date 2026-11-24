@@ -28,7 +28,6 @@ export default function Register({ onGoLogin }) {
 
     setLoading(true);
     try {
-      // role is always "customer" — admin accounts are created privately
       await apiFetch(ENDPOINTS.register, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },

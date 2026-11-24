@@ -32,10 +32,10 @@ export const register = async (data) => {
       throw new Error('Invalid admin access code!');
   }
 
-  const existingEmail = await userModel.findByEmail(email);
+  const existingEmail = await userModel.findUserByEmail(email);
   if (existingEmail.length > 0) throw new Error('An account with this email already exists!');
 
-  const existingUsername = await userModel.findByUsername(username);
+  const existingUsername = await userModel.findUserByUsername(username);
   if (existingUsername.length > 0) throw new Error('Username is already taken!');
 
   const hash = await bcrypt.hash(pwd, 10);
@@ -48,7 +48,7 @@ export const login = async (email, password) => {
 
   if (!mail || !pwd) throw new Error('Email and password are required!');
 
-  const rows = await userModel.findByEmail(mail);
+  const rows = await userModel.findUserByEmail(mail);
   if (rows.length === 0) throw new Error('Invalid email or password!');
 
   const user  = rows[0];
