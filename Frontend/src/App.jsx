@@ -3,58 +3,37 @@ import "./index.css";
 
 import { useAuth } from "./context/AuthContext";
 
-// Layouts 
-import AdminLayout    from "./layouts/AdminLayout";
-import CustomerLayout from "./layouts/CustomerLayout";
+// ── Layouts ──────────────────────────────────────────────────────────────────
+import AdminLayout from "./layouts/AdminLayout";
 
-// Auth pages 
+// ── Auth pages ────────────────────────────────────────────────────────────────
 import Login    from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 
-// Admin pages 
-import Dashboard  from "./pages/admin/Dashboard";
-import POSOrders  from "./pages/admin/POSOrders";
-import Inventory  from "./pages/admin/Inventory";
-import Analytics  from "./pages/admin/Analytics";
-import Promotions from "./pages/admin/Promotions";
+// ── Admin pages ───────────────────────────────────────────────────────────────
+import POSOrders from "./pages/admin/POSOrders";
+import Inventory from "./pages/admin/Inventory";
 
-// Customer pages 
-import Home     from "./pages/customer/Home";
-import Shop     from "./pages/customer/Shop";
-import MyOrders from "./pages/customer/MyOrders";
-
-// Page maps
+// ── Page maps ─────────────────────────────────────────────────────────────────
 const ADMIN_PAGES = {
-  dashboard:    Dashboard,
   "pos-orders": POSOrders,
   inventory:    Inventory,
-  analytics:    Analytics,
-  promotions:   Promotions,
 };
 
-const CUSTOMER_PAGES = {
-  home:       Home,
-  shop:       Shop,
-  "my-orders": MyOrders,
-};
-
-// App
+// ── App ───────────────────────────────────────────────────────────────────────
 export default function App() {
   const { auth } = useAuth();
 
-  const [authView,     setAuthView]     = useState("login");
-  const [adminPage,    setAdminPage]    = useState("dashboard");
-  const [customerPage, setCustomerPage] = useState("home");
+  const [authView,  setAuthView]  = useState("login");
+  const [adminPage, setAdminPage] = useState("inventory");
 
-  // Reset to home pages on logout
   useEffect(() => {
     if (!auth) {
-      setAdminPage("dashboard");
-      setCustomerPage("home");
+      setAdminPage("inventory");
     }
   }, [auth]);
 
-  // Not logged in → show login or register 
+  // ── Not logged in ─────────────────────────────────────────────────────────
   if (!auth) {
     return (
       <div className="auth-layout">
@@ -80,9 +59,9 @@ export default function App() {
     );
   }
 
-  // Admin 
+  // ── Admin only (no customer pages for now) ────────────────────────────────
   if (auth.user?.role === "admin") {
-    const AdminPage = ADMIN_PAGES[adminPage] ?? Dashboard;
+    const AdminPage = ADMIN_PAGES[adminPage] ?? Inventory;
     return (
       <AdminLayout current={adminPage} onNavigate={setAdminPage}>
         <AdminPage onNavigate={setAdminPage} />
@@ -90,11 +69,13 @@ export default function App() {
     );
   }
 
-  // Customer 
-  const CustomerPage = CUSTOMER_PAGES[customerPage] ?? Home;
+  // ── Customer fallback (empty for now) ─────────────────────────────────────
   return (
-    <CustomerLayout current={customerPage} onNavigate={setCustomerPage}>
-      <CustomerPage onNavigate={setCustomerPage} />
-    </CustomerLayout>
+    <div style={{ padding: 40, textAlign: "center" }}>
+      <h1>Customer view coming soon</h1>
+      <button onClick={() => { auth && window.location.reload(); }}>
+        Logout
+      </button>
+    </div>
   );
-} 
+}
