@@ -49,7 +49,7 @@ const emptyForm = {
 
 function ProductModal({ product, ownerId, onSave, onClose }) {
   const isEdit = Boolean(product);
-  const [form,   setForm]   = useState(
+  const [form, setForm] = useState(
     isEdit
       ? {
           product_name:  product.product_name,
@@ -60,11 +60,22 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
         }
       : { ...emptyForm }
   );
-  const [error,  setError]  = useState("");
-  const [saving, setSaving] = useState(false);
+  const [imageData,  setImageData]  = useState(product?.image ?? null);
+  const [imageError, setImageError] = useState("");
+  const [error,      setError]      = useState("");
+  const [saving,     setSaving]     = useState(false);
 
   const setField = (e) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImageError("");
+    const reader = new FileReader();
+    reader.onload = () => setImageData(reader.result);
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -76,7 +87,7 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
       await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, owner_id: ownerId }),
+        body: JSON.stringify({ ...form, owner_id: ownerId, image: imageData }),
       });
       onSave(isEdit ? "Product updated successfully." : "Product added successfully.");
     } catch (e) {
@@ -87,14 +98,12 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
   };
 
   return (
-    /* ── modal backdrop ── */
     <div
       className="modal-backdrop"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="modal inv-modal">
 
-        {/* header */}
         <div className="modal-head">
           <h2>{isEdit ? "Edit Product" : "Add Product"}</h2>
           <button className="modal-close-btn" onClick={onClose} aria-label="Close">×</button>
@@ -113,7 +122,7 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
             />
           </div>
 
-          {/* Category — toggle chips */}
+          {/* Category */}
           <div className="inv-field">
             <label>Category</label>
             <div className="inv-toggle-group">
@@ -131,7 +140,9 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
 
           {/* Description */}
           <div className="inv-field">
-            <label htmlFor="description">Description <span className="inv-optional">(optional)</span></label>
+            <label htmlFor="description">
+              Description <span className="inv-optional">(optional)</span>
+            </label>
             <input
               id="description" name="description"
               placeholder="Short product description"
@@ -140,46 +151,91 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
             />
           </div>
 
-          {/* Price + Reorder Level side by side */}
+          {/* Price + Reorder Level */}
           <div className="inv-field-row">
             <div className="inv-field">
               <label htmlFor="price">Price (₱)</label>
               <input
                 id="price" name="price" type="number"
-                min="0" step="0.01"
-                placeholder="e.g. 180.00"
-                value={form.price}
-                onChange={setField} required
+                min="0" step="0.01" placeholder="e.g. 180.00"
+                value={form.price} onChange={setField} required
               />
             </div>
             <div className="inv-field">
               <label htmlFor="reorder_level">Low-Stock Level</label>
               <input
                 id="reorder_level" name="reorder_level" type="number"
-                min="0" step="1"
-                placeholder="e.g. 10"
-                value={form.reorder_level}
-                onChange={setField} required
+                min="0" step="1" placeholder="e.g. 10"
+                value={form.reorder_level} onChange={setField} required
               />
             </div>
           </div>
 
-          {/* Starting stock — only on Add */}
+          {/* Starting stock — Add only */}
           {!isEdit && (
             <div className="inv-field">
               <label htmlFor="stock_quantity">Starting Stock</label>
               <input
                 id="stock_quantity" name="stock_quantity" type="number"
-                min="0" step="1"
-                placeholder="e.g. 20"
-                value={form.stock_quantity}
-                onChange={setField} required
+                min="0" step="1" placeholder="e.g. 20"
+                value={form.stock_quantity} onChange={setField} required
               />
               <small className="inv-hint">
                 Stock changes after creation go through Stock Movement.
               </small>
             </div>
           )}
+
+          {/* Product Photo */}
+          <div className="inv-field">
+            <label>
+              Product Photo <span className="inv-optional">(optional)</span>
+            </label>
+
+            {/* Preview box — shows full image or placeholder */}
+            <div className="inv-img-preview">
+              {imageData
+                ? <img src={imageData} alt="Product preview" />
+                : (
+                  <div className="inv-img-empty">
+                    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" width="40" height="40">
+                      <rect x="4" y="8" width="40" height="32" rx="4"/>
+                      <circle cx="16" cy="20" r="4"/>
+                      <path d="M4 36l10-10 8 8 6-6 10 10"/>
+                    </svg>
+                    <span>No photo yet</span>
+                  </div>
+                )
+              }
+            </div>
+
+            {/* Buttons */}
+            <div className="inv-img-actions">
+              <label className="inv-upload-btn">
+                {imageData ? "Change Photo" : "Upload Photo"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleImageChange}
+                />
+              </label>
+              {imageData && (
+                <button
+                  type="button"
+                  className="inv-btn-cancel"
+                  onClick={() => { setImageData(null); setImageError(""); }}
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+
+            {imageError && (
+              <small className="inv-img-error">{imageError}</small>
+            )}
+            <small className="inv-hint">JPG, PNG, WEBP — any size</small>
+          </div>
 
           {/* Error */}
           {error && (
@@ -188,7 +244,7 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
             </p>
           )}
 
-          {/* Footer buttons */}
+          {/* Footer */}
           <div className="inv-modal-footer">
             <button type="button" className="inv-btn-cancel" onClick={onClose}>
               Cancel
