@@ -1,20 +1,29 @@
 import express from "express";
-import cors from 'cors';
+import cors from "cors";
+import "dotenv/config";
 
-import inventoryRoute from './routes/inventoryRoute.js';
-import stockMovementRoute from './routes/stockMovementRoute.js';
+import userRoute from "./routes/userRoute.js";
+import inventoryRoute from "./routes/inventoryRoute.js";
+import stockMovementRoute from "./routes/stockMovementRoute.js";
+import saleRoute from "./routes/saleRoute.js";
+import promotionRoute from "./routes/promotionRoute.js";
+import analyticsRoute from "./routes/analyticsRoute.js";
 
-let corsOptions = {
-    origin: 'http://localhost:5173',
-}
+const corsOptions = {
+    origin: ["http://localhost:5173"],
+};
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
 app.use(cors(corsOptions));
 
-app.use('/inventory', inventoryRoute);
-app.use('/stock-movement', stockMovementRoute);
+app.use("/user", userRoute);
+app.use("/inventory", inventoryRoute);
+app.use("/stock-movement", stockMovementRoute);
+app.use("/sale", saleRoute);
+app.use("/promotion", promotionRoute);
+app.use("/analytics", analyticsRoute);
 
 try {
     const port = 3001;

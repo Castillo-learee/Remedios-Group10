@@ -1,87 +1,101 @@
+
 import * as inventoryModel from '../models/inventoryModel.js';
+import ValidationError from '../utils/ValidationError.js';
 
-// validates and cleans the incoming product data
+// Clean and validate incoming product fields
 const cleanProduct = (product) => {
-  const name = String(product.name ?? '').trim();
-  const category = String(product.category ?? '').trim();
+    const product_name = String(product.product_name ?? product.name ?? '').trim();
+    const category = String(product.category ?? '').trim();
+    const description = String(product.description ?? '').trim() || null;
 
-  if (!name || !category) {
-    throw new Error('Name and Category are required!');
-  }
-  if (product.price === undefined || product.price === null || product.price === '') {
-    throw new Error('Price is required!');
-  }
+    if (!product_name || !category) {
+        throw new ValidationError('Product name and category are required!', 400);
+    }
 
-  const price = Number(product.price);
-  const stock = Number(product.stock ?? 0);
+    if (product.price === undefined || product.price === null || product.price === '') {
+        throw new ValidationError('Price is required!', 400);
+    }
 
-  if (Number.isNaN(price) || price < 0) {
-    throw new Error('Price must be 0 or more!');
-  }
-  if (!Number.isInteger(stock) || stock < 0) {
-    throw new Error('Stock must be a whole number, 0 or more!');
-  }
+    const price = Number(product.price);
+    const stock_quantity = Number(product.stock_quantity ?? product.stock ?? 0);
+    const reorder_level = Number(product.reorder_level ?? 10);
 
-  return { ...product, name, category, price, stock };
-};
+    if (isNaN(price) || price < 0) {
+        throw new ValidationError('Price must be 0 or more!', 400);
+    }
 
-const doesProductExist = async (id) => {
-  const existing = await inventoryModel.findProductById(id);
-  return existing.length > 0;
+    if (!Number.isInteger(stock_quantity) || stock_quantity < 0) {
+        throw new ValidationError('Stock must be a whole number, 0 or more!', 400);
+    }
+
+    if (!Number.isInteger(reorder_level) || reorder_level < 0) {
+        throw new ValidationError('Low-stock level must be a whole number, 0 or more!', 400);
+    }
+
+    const image = product.image !== undefined ? (product.image || null) : undefined;
+
+    return {
+        ...product,
+        product_name,
+        category,
+        description,
+        price,
+        stock_quantity,
+        reorder_level,
+        image
+    };
 };
 
 export const fetchAllProducts = async () => {
-  const products = await inventoryModel.fetch();
-  return products;
+    return await inventoryModel.fetch();
 };
 
-// insert
 export const createProduct = async (data) => {
-  const product = cleanProduct(data);
+    const product = cleanProduct(data);
 
-  const duplicate = await inventoryModel.findProductByNameAndCategory(product.name, product.category);
-  if (duplicate.length > 0) {
-    throw new Error('Product already exists!');
-  }
+    const dup = await inventoryModel.findProductByNameAndCategory(
+        product.product_name,
+        product.category
+    );
 
-  const productId = await inventoryModel.insert(product);
-  return productId;
+    if (dup.length > 0) {
+        throw new ValidationError('A product with this name and category already exists!', 400);
+    }
+
+    return await inventoryModel.insert(product);
 };
 
-// update
 export const updateProduct = async (data) => {
-  const product = cleanProduct(data);
+    const product = cleanProduct(data);
+    const id = product.product_id ?? product.id;
 
-  const existing = await doesProductExist(product.id);
-  if (!existing) {
-    throw new Error('Product does not exist!');
-  }
+    const existing = await inventoryModel.findProductById(id);
 
-  // another product with the same name and category is not allowed
-  const duplicate = await inventoryModel.findProductByNameAndCategory(product.name, product.category);
-  if (duplicate.some((p) => p.id !== product.id)) {
-    throw new Error('Product already exists!');
-  }
+    if (existing.length === 0) {
+        throw new ValidationError('Product does not exist!', 404);
+    }
 
-  const updatedProduct = await inventoryModel.update(product);
-  return updatedProduct;
+    const dup = await inventoryModel.findProductByNameAndCategory(
+        product.product_name,
+        product.category
+    );
+
+    if (dup.some((p) => p.product_id !== id)) {
+        throw new ValidationError('Another product with this name and category already exists!', 400);
+    }
+
+    return await inventoryModel.update({ ...product, product_id: id });
 };
 
-// delete
 export const deleteProduct = async (id) => {
-  const existing = await doesProductExist(id);
-  if (!existing) {
-    throw new Error('Product does not exist!');
-  }
+    const existing = await inventoryModel.findProductById(id);
 
-  const deletedProduct = await inventoryModel.remove(id);
-  return deletedProduct;
+    if (existing.length === 0) {
+        throw new ValidationError('Product does not exist!', 404);
+    }
+
+    return await inventoryModel.remove(id);
 };
 
-export const fetchSummary = async () => {
-  return await inventoryModel.summary();
-};
-
-export const fetchLowStock = async () => {
-  return await inventoryModel.fetchLowStock();
-};
+export const fetchSummary = async () => await inventoryModel.summary();
+export const fetchLowStock = async () => await inventoryModel.fetchLowStock();

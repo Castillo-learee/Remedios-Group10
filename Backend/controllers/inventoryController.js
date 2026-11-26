@@ -1,3 +1,4 @@
+
 import * as inventoryService from '../services/inventoryServices.js';
 
 export const fetchAllProducts = async (req, res) => {
@@ -6,64 +7,58 @@ export const fetchAllProducts = async (req, res) => {
         res.status(200).json(products);
     } catch (e) {
         console.log(e);
-        res.status(500).json({
+        res.status(e.statusCode || 500).json({
             error: `${e.message || 'Internal Server Error'}`
         });
     }
 }
 
-// insert
 export const createProduct = async (req, res) => {
-    const { name, category, price, stock } = req.body;
-    const product = { name, category, price, stock };
+    const data = req.body;
 
     try {
-        const productId = await inventoryService.createProduct(product);
+        const productId = await inventoryService.createProduct(data);
         res.status(200).json({
             success: true,
             message: productId
         });
     } catch (e) {
         console.log(e);
-        res.status(500).json({
+        res.status(e.statusCode || 500).json({
             error: `${e.message || 'Internal Server Error'}`
         });
     }
 }
 
-// update
 export const editProduct = async (req, res) => {
-    const { name, category, price, stock } = req.body;
-    const { id } = req.params;
-    const product = { id: parseInt(id), name, category, price, stock };
+    const data = { ...req.body, product_id: parseInt(req.params.id) };
 
     try {
-        const updatedProduct = await inventoryService.updateProduct(product);
+        const result = await inventoryService.updateProduct(data);
         res.status(200).json({
             success: true,
-            message: updatedProduct
+            message: result
         });
     } catch (e) {
         console.log(e);
-        res.status(500).json({
+        res.status(e.statusCode || 500).json({
             error: `${e.message || 'Internal Server Error'}`
         });
     }
 }
 
-// delete
 export const deleteProduct = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const deletedProduct = await inventoryService.deleteProduct(parseInt(id));
+        const result = await inventoryService.deleteProduct(parseInt(id));
         res.status(200).json({
             success: true,
-            message: deletedProduct
+            message: result
         });
     } catch (e) {
         console.log(e);
-        res.status(500).json({
+        res.status(e.statusCode || 500).json({
             error: `${e.message || 'Internal Server Error'}`
         });
     }
@@ -75,7 +70,9 @@ export const getSummary = async (req, res) => {
         res.status(200).json(data);
     } catch (e) {
         console.log(e);
-        res.status(500).json({ error: `${e.message || 'Internal Server Error'}` });
+        res.status(e.statusCode || 500).json({
+            error: `${e.message || 'Internal Server Error'}`
+        });
     }
 }
 
@@ -85,6 +82,8 @@ export const getLowStock = async (req, res) => {
         res.status(200).json(data);
     } catch (e) {
         console.log(e);
-        res.status(500).json({ error: `${e.message || 'Internal Server Error'}` });
+        res.status(e.statusCode || 500).json({
+            error: `${e.message || 'Internal Server Error'}`
+        });
     }
 }
