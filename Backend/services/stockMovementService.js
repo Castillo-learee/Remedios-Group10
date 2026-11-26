@@ -1,38 +1,40 @@
 import * as stockMovementModel from '../models/stockMovementModel.js';
-import * as inventoryModel from '../models/inventoryModel.js';
+import * as inventoryModel     from '../models/inventoryModel.js';
+import ValidationError          from '../utils/ValidationError.js';
 
 const VALID_TYPES = ['stock_in', 'adjustment_increase', 'adjustment_decrease'];
 
 export const fetchAllStockMovements = async () => {
-  return await stockMovementModel.fetch();
+    return await stockMovementModel.fetch();
 };
 
-export const createStockMovement = async (movement) => {
-  const productId = Number(movement.productId);
-  const quantity  = Number(movement.quantity);
-  const type      = String(movement.type ?? '').trim();
-  const reason    = String(movement.reason ?? '').trim() || null;
+export const createStockMovement = async (data) => {
+    const productId = Number(data.productId);
+    const quantity  = Number(data.quantity);
+    const type      = String(data.type   ?? '').trim();
+    const reason    = String(data.reason ?? '').trim() || null;
 
-  if (!productId) {
-    throw new Error('Product is required!');
-  }
-  if (!movement.quantity) {
-    throw new Error('Quantity is required!');
-  }
-  if (!Number.isInteger(quantity) || quantity < 1) {
-    throw new Error('Quantity must be a whole number, 1 or more!');
-  }
-  if (!VALID_TYPES.includes(type)) {
-    throw new Error('Invalid movement type!');
-  }
-  if (type.startsWith('adjustment') && !reason) {
-    throw new Error('Reason is required for adjustments!');
-  }
+    if (!productId) {
+        throw new ValidationError('Product is required!', 400);
+    }
+    if (!data.quantity) {
+        throw new ValidationError('Quantity is required!', 400);
+    }
+    if (!Number.isInteger(quantity) || quantity < 1) {
+        throw new ValidationError('Quantity must be a whole number, 1 or more!', 400);
+    }
+    if (!VALID_TYPES.includes(type)) {
+        throw new ValidationError('Invalid movement type!', 400);
+    }
+    // Adjustments always require a reason for audit purposes
+    if (type.startsWith('adjustment') && !reason) {
+        throw new ValidationError('Reason is required for adjustments!', 400);
+    }
 
-  const product = await inventoryModel.findProductById(productId);
-  if (product.length === 0) {
-    throw new Error('Product does not exist!');
-  }
+    const product = await inventoryModel.findProductById(productId);
+    if (product.length === 0) {
+        throw new ValidationError('Product does not exist!', 404);
+    }
 
-  return await stockMovementModel.insert(productId, quantity, type, reason);
+    return await stockMovementModel.insert(productId, quantity, type, reason);
 };

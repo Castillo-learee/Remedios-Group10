@@ -1,53 +1,42 @@
 import pool from '../config/db.js';
 
-// Retrieve all movements with the product name joined in
 export const fetch = async () => {
   const [rows] = await pool.query(
-    `SELECT sm.id, sm.product_id, i.name AS product_name,
+    `SELECT sm.id, sm.product_id, p.product_name,
             sm.movement_type, sm.previous_stock,
             sm.quantity_change, sm.updated_stock,
             sm.reason, sm.created_at
      FROM stock_movement sm
-     JOIN inventory i ON i.id = sm.product_id
+     JOIN product p ON p.product_id = sm.product_id
      ORDER BY sm.created_at DESC, sm.id DESC`
   );
   return rows;
 };
 
-/**
- * Records a stock movement and updates inventory.stock in one transaction.
- *
- * movementType: 'stock_in' | 'adjustment_increase' | 'adjustment_decrease'
- * quantity:     positive integer — always the absolute amount
- * reason:       optional string
- */
+
 export const insert = async (productId, quantity, movementType, reason) => {
   const connection = await pool.getConnection();
-
   try {
     await connection.beginTransaction();
 
+    // Lock the row so concurrent requests cannot corrupt the balance
     const [rows] = await connection.query(
-      "SELECT stock FROM inventory WHERE id = ? FOR UPDATE",
-      [productId]
+      "SELECT stock_quantity FROM product WHERE product_id = ? FOR UPDATE", [productId]
     );
-    const previousStock = rows[0].stock;
+    if (rows.length === 0) throw new Error('Product does not exist!');
 
-    // quantity_change is signed: positive for in/increase, negative for decrease
-    const isDecrease = movementType === 'adjustment_decrease';
+    const previousStock  = rows[0].stock_quantity;
+    const isDecrease     = movementType === 'adjustment_decrease';
     const quantityChange = isDecrease ? -quantity : quantity;
-    const updatedStock = previousStock + quantityChange;
+    const updatedStock   = previousStock + quantityChange;
 
-    if (updatedStock < 0) {
-      throw new Error('Stock cannot go below zero.');
-    }
+    if (updatedStock < 0) throw new Error('Stock cannot go below zero.');
 
-    // Map the two adjustment sub-types to the DB enum value 'adjustment'
-    const dbMovementType =
-      movementType === 'stock_in' ? 'stock_in' : 'adjustment';
+    // Map UI type to the two values stored in the DB column
+    const dbMovementType = movementType === 'stock_in' ? 'stock_in' : 'adjustment';
 
     await connection.query(
-      "UPDATE inventory SET stock = ? WHERE id = ?",
+      "UPDATE product SET stock_quantity = ? WHERE product_id = ?",
       [updatedStock, productId]
     );
 
@@ -66,4 +55,30 @@ export const insert = async (productId, quantity, movementType, reason) => {
   } finally {
     connection.release();
   }
+};
+
+export const applyMovement = async (connection, productId, quantityChange, movementType, reason) => {
+  const [rows] = await connection.query(
+    "SELECT stock_quantity FROM product WHERE product_id = ? FOR UPDATE", [productId]
+  );
+  if (rows.length === 0) throw new Error(`Product ${productId} does not exist!`);
+
+  const previousStock = rows[0].stock_quantity;
+  const updatedStock  = previousStock + quantityChange;
+
+  if (updatedStock < 0) {
+    throw new Error(
+      `Not enough stock for product ID ${productId}. Available: ${previousStock}, needed: ${Math.abs(quantityChange)}.`
+    );
+  }
+
+  await connection.query(
+    "UPDATE product SET stock_quantity = ? WHERE product_id = ?", [updatedStock, productId]
+  );
+
+  await connection.query(
+    `INSERT INTO stock_movement (product_id, movement_type, previous_stock, quantity_change, updated_stock, reason)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [productId, movementType, previousStock, quantityChange, updatedStock, reason || null]
+  );
 };

@@ -3,7 +3,7 @@ import express from "express";
 
 const stockMovementRoute = express.Router();
 
-stockMovementRoute.get('/', stockMovementController.fetchAllStockMovements);
+stockMovementRoute.get('/',  stockMovementController.fetchAllStockMovements);
 stockMovementRoute.post('/', stockMovementController.createStockMovement);
 
 export default stockMovementRoute;
