@@ -25,7 +25,6 @@ const MOVE_TYPES = [
 
 const MOVE_LABEL = { stock_in: "Stock-in", adjustment: "Adjustment", sale: "Sale" };
 
-// ── Shared helpers ────────────────────────────────────────────────────────────
 function Notice({ notice, onClose }) {
   if (!notice) return null;
   return (
@@ -41,7 +40,6 @@ function StatusBadge({ stock, reorderLevel }) {
   return <span className={className}>{label}</span>;
 }
 
-// ── Product modal (Add / Edit) ────────────────────────────────────────────────
 const emptyForm = {
   product_name: "", category: "Plasticware",
   description: "", price: "", stock_quantity: "", reorder_level: "10",
@@ -103,7 +101,6 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="modal inv-modal">
-
         <div className="modal-head">
           <h2>{isEdit ? "Edit Product" : "Add Product"}</h2>
           <button className="modal-close-btn" onClick={onClose} aria-label="Close">×</button>
@@ -111,7 +108,6 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
 
         <form onSubmit={handleSubmit} className="inv-modal-form">
 
-          {/* Product Name */}
           <div className="inv-field">
             <label htmlFor="product_name">Product Name</label>
             <input
@@ -122,7 +118,6 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
             />
           </div>
 
-          {/* Category */}
           <div className="inv-field">
             <label>Category</label>
             <div className="inv-toggle-group">
@@ -138,7 +133,6 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
             </div>
           </div>
 
-          {/* Description */}
           <div className="inv-field">
             <label htmlFor="description">
               Description <span className="inv-optional">(optional)</span>
@@ -151,7 +145,6 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
             />
           </div>
 
-          {/* Price + Reorder Level */}
           <div className="inv-field-row">
             <div className="inv-field">
               <label htmlFor="price">Price (₱)</label>
@@ -171,7 +164,6 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
             </div>
           </div>
 
-          {/* Starting stock — Add only */}
           {!isEdit && (
             <div className="inv-field">
               <label htmlFor="stock_quantity">Starting Stock</label>
@@ -186,13 +178,10 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
             </div>
           )}
 
-          {/* Product Photo */}
           <div className="inv-field">
             <label>
               Product Photo <span className="inv-optional">(optional)</span>
             </label>
-
-            {/* Preview box — shows full image or placeholder */}
             <div className="inv-img-preview">
               {imageData
                 ? <img src={imageData} alt="Product preview" />
@@ -208,8 +197,6 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
                 )
               }
             </div>
-
-            {/* Buttons */}
             <div className="inv-img-actions">
               <label className="inv-upload-btn">
                 {imageData ? "Change Photo" : "Upload Photo"}
@@ -230,21 +217,16 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
                 </button>
               )}
             </div>
-
-            {imageError && (
-              <small className="inv-img-error">{imageError}</small>
-            )}
+            {imageError && <small className="inv-img-error">{imageError}</small>}
             <small className="inv-hint">JPG, PNG, WEBP — any size</small>
           </div>
 
-          {/* Error */}
           {error && (
             <p className="notice error form-error" role="alert">
               <span>{error}</span>
             </p>
           )}
 
-          {/* Footer */}
           <div className="inv-modal-footer">
             <button type="button" className="inv-btn-cancel" onClick={onClose}>
               Cancel
@@ -253,14 +235,12 @@ function ProductModal({ product, ownerId, onSave, onClose }) {
               {saving ? "Saving…" : isEdit ? "Save Changes" : "Add Product"}
             </button>
           </div>
-
         </form>
       </div>
     </div>
   );
 }
 
-// ── Delete confirmation modal ─────────────────────────────────────────────────
 function DeleteModal({ product, onConfirm, onClose }) {
   const [deleting, setDeleting] = useState(false);
 
@@ -302,21 +282,19 @@ function DeleteModal({ product, onConfirm, onClose }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// PRODUCTS TAB
-// ══════════════════════════════════════════════════════════════════════════════
+
 function ProductsTab() {
   const { auth }  = useAuth();
   const ownerId   = auth?.user?.id ?? 1;
 
-  const [products, setProducts] = useState([]);
-  const [summary,  setSummary]  = useState(null);
-  const [lowStock, setLowStock] = useState([]);
-  const [modal,    setModal]    = useState(null); // null | { mode:"add"/"edit"/"delete", product? }
-  const [search,   setSearch]   = useState("");
+  const [products,  setProducts]  = useState([]);
+  const [summary,   setSummary]   = useState(null);
+  const [lowStock,  setLowStock]  = useState([]);
+  const [modal,     setModal]     = useState(null);
+  const [search,    setSearch]    = useState("");
   const [catFilter, setCatFilter] = useState("");
-  const [notice,   setNotice]   = useState(null);
-  const [loading,  setLoading]  = useState(true);
+  const [notice,    setNotice]    = useState(null);
+  const [loading,   setLoading]   = useState(true);
 
   const showNotice = (type, text) => {
     setNotice({ type, text });
@@ -367,7 +345,6 @@ function ProductsTab() {
 
   return (
     <>
-      {/* ── Header ── */}
       <section id="headerContainer">
         <h1>Inventory</h1>
         <small>Manage your product catalogue</small>
@@ -378,10 +355,7 @@ function ProductsTab() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <button
-            className="inv-add-btn"
-            onClick={() => setModal({ mode: "add" })}
-          >
+          <button className="inv-add-btn" onClick={() => setModal({ mode: "add" })}>
             + Add Product
           </button>
         </div>
@@ -389,7 +363,6 @@ function ProductsTab() {
 
       <Notice notice={notice} onClose={() => setNotice(null)} />
 
-      {/* ── Summary cards ── */}
       {summary && (
         <section id="summaryCards">
           <div className="summary-card">
@@ -407,7 +380,6 @@ function ProductsTab() {
         </section>
       )}
 
-      {/* ── Low-stock alert ── */}
       {lowStock.length > 0 && (
         <section id="lowStockAlert" role="alert">
           <strong>
@@ -427,12 +399,10 @@ function ProductsTab() {
         </section>
       )}
 
-      {/* ── Category filter chips ── */}
       <div className="chips">
-        <button
-          className={`chip${!catFilter ? " active" : ""}`}
-          onClick={() => setCatFilter("")}
-        >All</button>
+        <button className={`chip${!catFilter ? " active" : ""}`} onClick={() => setCatFilter("")}>
+          All
+        </button>
         {usedCats.map((c) => (
           <button
             key={c}
@@ -442,7 +412,6 @@ function ProductsTab() {
         ))}
       </div>
 
-      {/* ── Product table ── */}
       <section id="listContainer">
         <table>
           <thead>
@@ -478,21 +447,14 @@ function ProductsTab() {
                 <td>{p.stock_quantity}</td>
                 <td>{p.reorder_level}</td>
                 <td>
-                  <StatusBadge
-                    stock={p.stock_quantity}
-                    reorderLevel={p.reorder_level}
-                  />
+                  <StatusBadge stock={p.stock_quantity} reorderLevel={p.reorder_level} />
                 </td>
                 <td className="actions">
-                  <button onClick={() => setModal({ mode: "edit", product: p })}>
-                    Edit
-                  </button>
+                  <button onClick={() => setModal({ mode: "edit", product: p })}>Edit</button>
                   <button
                     className="danger"
                     onClick={() => setModal({ mode: "delete", product: p })}
-                  >
-                    Delete
-                  </button>
+                  >Delete</button>
                 </td>
               </tr>
             ))}
@@ -500,7 +462,6 @@ function ProductsTab() {
         </table>
       </section>
 
-      {/* ── Add / Edit modal ── */}
       {(modal?.mode === "add" || modal?.mode === "edit") && (
         <ProductModal
           product={modal.mode === "edit" ? modal.product : null}
@@ -510,7 +471,6 @@ function ProductsTab() {
         />
       )}
 
-      {/* ── Delete confirmation modal ── */}
       {modal?.mode === "delete" && (
         <DeleteModal
           product={modal.product}
@@ -522,9 +482,7 @@ function ProductsTab() {
   );
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// STOCK MOVEMENT TAB
-// ══════════════════════════════════════════════════════════════════════════════
+
 function StockMovementTab() {
   const [movements, setMovements] = useState([]);
   const [products,  setProducts]  = useState([]);
@@ -569,6 +527,11 @@ function StockMovementTab() {
 
   const needsReason = form.type.startsWith("adjustment");
 
+  // Currently selected product — shows current stock below the dropdown
+  const selectedProduct = products.find(
+    (p) => String(p.product_id) === String(form.productId)
+  );
+
   return (
     <>
       <section id="headerContainer">
@@ -592,6 +555,11 @@ function StockMovementTab() {
                 </option>
               ))}
             </select>
+            {selectedProduct && (
+              <small className="inv-hint">
+                Current stock: <strong>{selectedProduct.stock_quantity}</strong> units
+              </small>
+            )}
           </div>
 
           <div className="input-field">
@@ -673,9 +641,6 @@ function StockMovementTab() {
   );
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// MAIN PAGE (tabs)
-// ══════════════════════════════════════════════════════════════════════════════
 export default function Inventory() {
   const [tab, setTab] = useState("products");
 
@@ -689,6 +654,7 @@ export default function Inventory() {
         >
           Products
         </button>
+        {/* 2.2.1 — Stock Management tab */}
         <button
           role="tab"
           className={tab === "stock" ? "active" : ""}
