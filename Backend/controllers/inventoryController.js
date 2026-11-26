@@ -1,3 +1,4 @@
+
 import * as inventoryService from '../services/inventoryServices.js';
 
 export const fetchAllProducts = async (req, res) => {

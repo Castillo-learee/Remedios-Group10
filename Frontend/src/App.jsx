@@ -3,27 +3,27 @@ import "./index.css";
 
 import { useAuth } from "./context/AuthContext";
 
-// ── Layouts ──────────────────────────────────────────────────────────────────
+// Layouts 
 import AdminLayout    from "./layouts/AdminLayout";
 import CustomerLayout from "./layouts/CustomerLayout";
 
-// ── Auth pages ────────────────────────────────────────────────────────────────
+// Auth pages 
 import Login    from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 
-// ── Admin pages ───────────────────────────────────────────────────────────────
+// Admin pages 
 import Dashboard  from "./pages/admin/Dashboard";
 import POSOrders  from "./pages/admin/POSOrders";
 import Inventory  from "./pages/admin/Inventory";
 import Analytics  from "./pages/admin/Analytics";
 import Promotions from "./pages/admin/Promotions";
 
-// ── Customer pages ────────────────────────────────────────────────────────────
+// Customer pages 
 import Home     from "./pages/customer/Home";
 import Shop     from "./pages/customer/Shop";
 import MyOrders from "./pages/customer/MyOrders";
 
-// ─── Page maps ────────────────────────────────────────────────────────────────
+// Page maps
 const ADMIN_PAGES = {
   dashboard:    Dashboard,
   "pos-orders": POSOrders,
@@ -38,7 +38,7 @@ const CUSTOMER_PAGES = {
   "my-orders": MyOrders,
 };
 
-// ─── App ──────────────────────────────────────────────────────────────────────
+// App
 export default function App() {
   const { auth } = useAuth();
 
@@ -54,7 +54,7 @@ export default function App() {
     }
   }, [auth]);
 
-  // ── Not logged in → show login or register ────────────────────────────────
+  // Not logged in → show login or register 
   if (!auth) {
     return (
       <div className="auth-layout">
@@ -80,7 +80,7 @@ export default function App() {
     );
   }
 
-  // ── Admin ─────────────────────────────────────────────────────────────────
+  // Admin 
   if (auth.user?.role === "admin") {
     const AdminPage = ADMIN_PAGES[adminPage] ?? Dashboard;
     return (
@@ -90,11 +90,11 @@ export default function App() {
     );
   }
 
-  // ── Customer ──────────────────────────────────────────────────────────────
+  // Customer 
   const CustomerPage = CUSTOMER_PAGES[customerPage] ?? Home;
   return (
     <CustomerLayout current={customerPage} onNavigate={setCustomerPage}>
       <CustomerPage onNavigate={setCustomerPage} />
     </CustomerLayout>
   );
-}
+} 
