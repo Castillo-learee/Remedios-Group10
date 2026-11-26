@@ -1,4 +1,3 @@
-
 import * as inventoryService from '../services/inventoryServices.js';
 
 export const fetchAllProducts = async (req, res) => {
@@ -11,7 +10,7 @@ export const fetchAllProducts = async (req, res) => {
             error: `${e.message || 'Internal Server Error'}`
         });
     }
-}
+};
 
 export const createProduct = async (req, res) => {
     const data = req.body;
@@ -28,7 +27,7 @@ export const createProduct = async (req, res) => {
             error: `${e.message || 'Internal Server Error'}`
         });
     }
-}
+};
 
 export const editProduct = async (req, res) => {
     const data = { ...req.body, product_id: parseInt(req.params.id) };
@@ -45,7 +44,7 @@ export const editProduct = async (req, res) => {
             error: `${e.message || 'Internal Server Error'}`
         });
     }
-}
+};
 
 export const deleteProduct = async (req, res) => {
     const { id } = req.params;
@@ -62,7 +61,7 @@ export const deleteProduct = async (req, res) => {
             error: `${e.message || 'Internal Server Error'}`
         });
     }
-}
+};
 
 export const getSummary = async (req, res) => {
     try {
@@ -74,7 +73,7 @@ export const getSummary = async (req, res) => {
             error: `${e.message || 'Internal Server Error'}`
         });
     }
-}
+};
 
 export const getLowStock = async (req, res) => {
     try {
@@ -86,4 +85,4 @@ export const getLowStock = async (req, res) => {
             error: `${e.message || 'Internal Server Error'}`
         });
     }
-}
+};

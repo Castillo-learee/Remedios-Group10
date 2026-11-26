@@ -282,7 +282,6 @@ function DeleteModal({ product, onConfirm, onClose }) {
   );
 }
 
-
 function ProductsTab() {
   const { auth }  = useAuth();
   const ownerId   = auth?.user?.id ?? 1;
@@ -482,7 +481,6 @@ function ProductsTab() {
   );
 }
 
-
 function StockMovementTab() {
   const [movements, setMovements] = useState([]);
   const [products,  setProducts]  = useState([]);
@@ -527,7 +525,6 @@ function StockMovementTab() {
 
   const needsReason = form.type.startsWith("adjustment");
 
-  // Currently selected product — shows current stock below the dropdown
   const selectedProduct = products.find(
     (p) => String(p.product_id) === String(form.productId)
   );

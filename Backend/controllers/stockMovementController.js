@@ -6,19 +6,26 @@ export const fetchAllStockMovements = async (req, res) => {
         res.status(200).json(movements);
     } catch (e) {
         console.log(e);
-        res.status(500).json({ error: `${e.message || 'Internal Server Error'}` });
+        res.status(e.statusCode || 500).json({
+            error: `${e.message || 'Internal Server Error'}`
+        });
     }
-}
+};
 
 export const createStockMovement = async (req, res) => {
     const { productId, type, quantity, reason } = req.body;
-    const movement = { productId, type, quantity, reason };
+    const data = { productId, type, quantity, reason };
 
     try {
-        const movementId = await stockMovementService.createStockMovement(movement);
-        res.status(200).json({ success: true, message: movementId });
+        const movementId = await stockMovementService.createStockMovement(data);
+        res.status(200).json({
+            success: true,
+            message: movementId
+        });
     } catch (e) {
         console.log(e);
-        res.status(500).json({ error: `${e.message || 'Internal Server Error'}` });
+        res.status(e.statusCode || 500).json({
+            error: `${e.message || 'Internal Server Error'}`
+        });
     }
-}
+};
