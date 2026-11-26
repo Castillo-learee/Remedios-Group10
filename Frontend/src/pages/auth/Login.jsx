@@ -4,15 +4,30 @@ import { ENDPOINTS, apiFetch } from "../../services/api";
 
 export default function Login({ onGoRegister }) {
   const { login } = useAuth();
-  const [form,    setForm]    = useState({ email: "", password: "" });
-  const [error,   setError]   = useState("");
-  const [loading, setLoading] = useState(false);
+  const [form,     setForm]     = useState({ email: "", password: "" });
+  const [showPwd,  setShowPwd]  = useState(false);
+  const [error,    setError]    = useState("");
+  const [loading,  setLoading]  = useState(false);
 
   const setField = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!form.email && !form.password) {
+      setError("Email and password are required!");
+      return;
+    }
+    if (!form.email) {
+      setError("Email is required!");
+      return;
+    }
+    if (!form.password) {
+      setError("Password is required!");
+      return;
+    }
+
     setLoading(true);
     try {
       const body = await apiFetch(ENDPOINTS.login, {
@@ -51,9 +66,19 @@ export default function Login({ onGoRegister }) {
 
         <div className="input-field">
           <label htmlFor="password">Password</label>
-          <input id="password" name="password" type="password"
-            placeholder="••••••••"
-            value={form.password} onChange={setField} required />
+          <div className="access-code-wrap">
+            <input id="password" name="password"
+              type={showPwd ? "text" : "password"}
+              placeholder="••••••••"
+              value={form.password} onChange={setField} required />
+            <button
+              type="button"
+              className="toggle-vis"
+              onClick={() => setShowPwd(!showPwd)}
+            >
+              {showPwd ? "Hide" : "Show"}
+            </button>
+          </div>
         </div>
 
         {error && (
