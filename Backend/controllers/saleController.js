@@ -1,68 +1,93 @@
 import * as saleService from '../services/saleServices.js';
 
-// GET /sale?type=order  or  /sale?type=direct
-export const fetchAllSales = async (req, res) => {
+export const fetchAllOrders = async (req, res) => {
     try {
-        const sales = await saleService.fetchAllSales(req.query.type);
-        res.status(200).json(sales);
+        const orders = await saleService.fetchAllOrders();
+        res.status(200).json(orders);
     } catch (e) {
         console.log(e);
-        res.status(500).json({
+        res.status(e.statusCode || 500).json({
             error: `${e.message || 'Internal Server Error'}`
         });
     }
-}
+};
 
-// view one sale with its items
+export const fetchOrder = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const order = await saleService.fetchOrderById(parseInt(id));
+        res.status(200).json(order);
+    } catch (e) {
+        console.log(e);
+        res.status(e.statusCode || 500).json({
+            error: `${e.message || 'Internal Server Error'}`
+        });
+    }
+};
+
+export const createOrder = async (req, res) => {
+    const data = req.body;
+    try {
+        const result = await saleService.createOrder(data);
+        res.status(200).json({ success: true, message: result });
+    } catch (e) {
+        console.log(e);
+        res.status(e.statusCode || 500).json({
+            error: `${e.message || 'Internal Server Error'}`
+        });
+    }
+};
+
+export const updateOrderStatus = async (req, res) => {
+    const { id }     = req.params;
+    const { status } = req.body;
+    try {
+        const newStatus = await saleService.updateOrderStatus(parseInt(id), status);
+        res.status(200).json({ success: true, message: newStatus });
+    } catch (e) {
+        console.log(e);
+        res.status(e.statusCode || 500).json({
+            error: `${e.message || 'Internal Server Error'}`
+        });
+    }
+};
+
+
+export const fetchAllSales = async (req, res) => {
+    try {
+        const sales = await saleService.fetchAllSales();
+        res.status(200).json(sales);
+    } catch (e) {
+        console.log(e);
+        res.status(e.statusCode || 500).json({
+            error: `${e.message || 'Internal Server Error'}`
+        });
+    }
+};
+
 export const fetchSale = async (req, res) => {
     const { id } = req.params;
-
     try {
         const sale = await saleService.fetchSaleById(parseInt(id));
         res.status(200).json(sale);
     } catch (e) {
         console.log(e);
-        res.status(500).json({
+        res.status(e.statusCode || 500).json({
             error: `${e.message || 'Internal Server Error'}`
         });
     }
-}
+};
 
-// insert
+
 export const createSale = async (req, res) => {
-    const { saleType, customerName, saleDate, status, items } = req.body;
-    const sale = { saleType, customerName, saleDate, status, items };
-
+    const data = req.body;
     try {
-        const saved = await saleService.createSale(sale);
-        res.status(200).json({
-            success: true,
-            message: saved.saleId,
-            status: saved.status
-        });
+        const result = await saleService.createSale(data);
+        res.status(200).json({ success: true, message: result });
     } catch (e) {
         console.log(e);
-        res.status(500).json({
+        res.status(e.statusCode || 500).json({
             error: `${e.message || 'Internal Server Error'}`
         });
     }
-}
-
-// update status (Complete or Cancel an order)
-export const updateSaleStatus = async (req, res) => {
-    const { status } = req.body;
-    const { id } = req.params;
-
-    try {
-        const newStatus = await saleService.updateSaleStatus(parseInt(id), status);
-        res.status(200).json({
-            success: true,
-            message: newStatus
-        });
-    } catch (e) {
-        console.log(e);
-        res.status(500).json({
-            error: `${e.message || 'Internal Server Error'}`
-        });
-    }
-}
+};
